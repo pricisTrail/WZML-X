@@ -23,6 +23,9 @@ from uvloop import install
 #faulthandler_enable()
 
 install()
+# Create and set event loop for Python 3.10+ compatibility
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
 setdefaulttimeout(600)
 
 pyroutils.MIN_CHAT_ID = -999999999999
