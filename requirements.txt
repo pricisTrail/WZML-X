@@ -32,6 +32,8 @@ pycountry
 pymongo
 pyrofork==2.2.11
 python-dotenv
+pytz
+tzlocal
 python-magic
 qbittorrent-api
 requests
