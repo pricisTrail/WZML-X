@@ -6,6 +6,7 @@ from inspect import signature
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pyrogram import Client as tgClient, enums, utils as pyroutils
 from pymongo import MongoClient
+import asyncio
 from asyncio import Lock
 from dotenv import load_dotenv, dotenv_values
 from threading import Thread
