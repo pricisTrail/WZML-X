@@ -128,6 +128,8 @@ async def get_audio_thumb(audio_file):
 
 
 async def take_ss(video_file, duration=None, total=1, gen_ss=False):
+    from asyncio import wait_for, TimeoutError as AsyncTimeoutError
+    
     des_dir = ospath.join('Thumbnails', f"{time()}")
     await makedirs(des_dir, exist_ok=True)
     if duration is None:
@@ -135,25 +137,51 @@ async def take_ss(video_file, duration=None, total=1, gen_ss=False):
     if duration == 0:
         duration = 3
     duration = duration - (duration * 2 / 100)
-    cmd = ["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", "",
-           "-i", video_file, "-vf", "thumbnail", "-frames:v", "1", des_dir]
     tstamps = {}
     thumb_sem = Semaphore(3)
     
     async def extract_ss(eq_thumb):
         async with thumb_sem:
-            cmd[5] = str((duration // total) * eq_thumb)
-            tstamps[f"wz_thumb_{eq_thumb}.jpg"] = strftime("%H:%M:%S", gmtime(float(cmd[5])))
-            cmd[-1] = ospath.join(des_dir, f"wz_thumb_{eq_thumb}.jpg")
-            task = await create_subprocess_exec(*cmd, stderr=PIPE)
-            return (task, await task.wait(), eq_thumb)
+            seek_time = max(1, int((duration / total) * eq_thumb))
+            if seek_time >= duration:
+                seek_time = max(1, int(duration * 0.1))
+            tstamps[f"wz_thumb_{eq_thumb}.jpg"] = strftime("%H:%M:%S", gmtime(seek_time))
+            output_path = ospath.join(des_dir, f"wz_thumb_{eq_thumb}.jpg")
+            # Fast seeking: -ss BEFORE -i, no thumbnail filter
+            cmd = [
+                "ffmpeg", "-hide_banner", "-loglevel", "error",
+                "-ss", str(seek_time),  # Seek before input = fast seeking
+                "-i", video_file,
+                "-vframes", "1",  # Just grab 1 frame
+                "-q:v", "2",  # Good quality
+                "-y",  # Overwrite without asking
+                output_path
+            ]
+            try:
+                task = await create_subprocess_exec(*cmd, stderr=PIPE)
+                # Add 30 second timeout to prevent hanging
+                rtype = await wait_for(task.wait(), timeout=30)
+                return (task, rtype, eq_thumb)
+            except AsyncTimeoutError:
+                task.kill()
+                await task.wait()
+                LOGGER.error(f'Thumbnail extraction timed out for: {video_file}')
+                return (task, -1, eq_thumb)
+            except Exception as e:
+                LOGGER.error(f'Thumbnail extraction error: {e}')
+                return (None, -1, eq_thumb)
     
     tasks = [extract_ss(eq_thumb) for eq_thumb in range(1, total+1)]
     status = await gather(*tasks)
     
     for task, rtype, eq_thumb in status:
         if rtype != 0 or not await aiopath.exists(ospath.join(des_dir, f"wz_thumb_{eq_thumb}.jpg")):
-            err = (await task.stderr.read()).decode().strip()
+            err = ""
+            if task and hasattr(task, 'stderr') and task.stderr:
+                try:
+                    err = (await task.stderr.read()).decode().strip()
+                except:
+                    pass
             LOGGER.error(f'Error while extracting thumbnail no. {eq_thumb} from video. Name: {video_file} stderr: {err}')
             await aiormtree(des_dir)
             return None
