@@ -10,7 +10,7 @@ from time import time
 from bot import download_dict_lock, download_dict, non_queued_dl, queue_dict_lock, DOWNLOAD_DIR
 from bot.helper.telegram_helper.message_utils import sendStatusMessage
 from bot.helper.mirror_utils.status_utils.queue_status import QueueStatus
-from bot.helper.ext_utils.bot_utils import sync_to_async, async_to_sync
+from bot.helper.ext_utils.bot_utils import sync_to_async, async_to_sync, MirrorStatus, EngineStatus, get_readable_file_size, get_readable_time
 from bot.helper.ext_utils.task_manager import is_queued, stop_duplicate_check, limit_checker
 
 LOGGER = getLogger(__name__)
@@ -21,12 +21,17 @@ class FFmpegDownloadStatus:
         self.__obj = obj
         self.__listener = listener
         self.__gid = gid
+        self.upload_details = listener.upload_details
+        self.message = listener.message
 
     def gid(self):
         return self.__gid
 
     def progress_raw(self):
         return self.__obj.progress
+
+    def processed_raw(self):
+        return self.__obj.downloaded_bytes
 
     def progress(self):
         return f'{round(self.__obj.progress, 2)}%'
@@ -44,7 +49,7 @@ class FFmpegDownloadStatus:
         return self.__obj.eta_string
 
     def status(self):
-        return "Downloading"
+        return MirrorStatus.STATUS_DOWNLOADING
 
     def processed_bytes(self):
         return self.__obj.downloaded_string
@@ -52,12 +57,11 @@ class FFmpegDownloadStatus:
     def listener(self):
         return self.__listener
 
-    @property
-    def message(self):
-        return self.__listener.message
-
     def download(self):
         return self.__obj
+
+    def eng(self):
+        return EngineStatus().STATUS_FFMPEG
 
 
 class FFmpegDownloader:

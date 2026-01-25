@@ -198,6 +198,7 @@ class EngineStatus:
         self.STATUS_ZIP = f"p7zip v{version_cache['p7zip']}"
         self.STATUS_QUEUE = "Sleep v0"
         self.STATUS_RCLONE = f"RClone {version_cache['rclone']}"
+        self.STATUS_FFMPEG = f"FFmpeg v{version_cache['ffmpeg']}"
 
 
 def get_readable_message():
