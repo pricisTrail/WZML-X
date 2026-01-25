@@ -70,7 +70,9 @@ class YoutubeDLHelper:
                                                'fragment': lambda n: 3,
                                                'file_access': lambda n: 3,
                                                'extractor': lambda n: 3},
-                     'http_headers': {'Accept-Encoding': 'gzip, deflate'}}
+                     'http_headers': {'Accept-Encoding': 'gzip, deflate', 'Accept': '*/*'},
+                     'legacy_server_connect': True,
+                     'nocheckcertificate': True}
 
     @property
     def download_speed(self):

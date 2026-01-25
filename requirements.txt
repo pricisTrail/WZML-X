@@ -7,6 +7,7 @@ aria2p
 asyncio
 beautifulsoup4
 brotli
+brotlicffi
 cinemagoer
 cloudscraper
 cryptography
