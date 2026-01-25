@@ -69,7 +69,8 @@ class YoutubeDLHelper:
                      'retry_sleep_functions': {'http': lambda n: 3,
                                                'fragment': lambda n: 3,
                                                'file_access': lambda n: 3,
-                                               'extractor': lambda n: 3}}
+                                               'extractor': lambda n: 3},
+                     'http_headers': {'Accept-Encoding': 'gzip, deflate'}}
 
     @property
     def download_speed(self):
