@@ -52,6 +52,10 @@ class FFmpegDownloadStatus:
     def listener(self):
         return self.__listener
 
+    @property
+    def message(self):
+        return self.__listener.message
+
     def download(self):
         return self.__obj
 
