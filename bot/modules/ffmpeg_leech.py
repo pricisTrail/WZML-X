@@ -80,7 +80,8 @@ async def ffmpeg_leech(client, message):
         isLeech=True, 
         tag=tag, 
         upPath=up,
-        source_url=link
+        source_url=link,
+        leech_utils={'screenshots': 0, 'thumb': ''}
     )
 
     await delete_links(message)
