@@ -69,13 +69,7 @@ class YoutubeDLHelper:
                      'retry_sleep_functions': {'http': lambda n: 3,
                                                'fragment': lambda n: 3,
                                                'file_access': lambda n: 3,
-                                               'extractor': lambda n: 3},
-                     'http_headers': {'Accept-Encoding': 'identity;q=1, *;q=0', 'Accept': '*/*'},
-                     'legacy_server_connect': True,
-                     'nocheckcertificate': True,
-                     'hls_prefer_native': False,
-                     'external_downloader': {'m3u8': 'ffmpeg'},
-                     'external_downloader_args': {'ffmpeg': ['-headers', 'Accept-Encoding: identity']}}
+                                               'extractor': lambda n: 3}}
 
     @property
     def download_speed(self):
